@@ -13,7 +13,8 @@ from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 import time
 import pandas as pd
-
+import win32com.client as win32
+import openpyxl
 class Crawling:
     def __init__(self):
         self.influence_list_link = []
@@ -42,7 +43,7 @@ class Crawling:
         start = 5
         finish = 50
         scroll = int(finish/20)+1
-        print(scroll)
+        time.sleep(3)
         SCROLL_PAUSE_SEC = 1
 
         # 스크롤 높이 가져옴
@@ -117,8 +118,21 @@ class Crawling:
             except Exception as e:
                 print(e)
         df.to_excel('influence.xlsx', index=False)
-        
+    
+    #엑셀 열너비 조정
+    def excel_style(self):
+        excel = win32.gencache.EnsureDispatch('Excel.Application')
+        load_wb = excel.Workbooks.Open('D:\외주\influence.xlsx')
+
+        sheet_list = []
+        for sh in load_wb.Sheets:
+            ws = load_wb.Worksheets(sh.Name)
+            ws.Columns.AutoFit()
+            ws.Rows.AutoFit()
+        load_wb.Save()
+        excel.Application.Quit()
 if(__name__=="__main__"):
     crawl = Crawling()
-    crawl.crawling()
-    crawl.list_crawling()
+    #crawl.crawling()
+    #crawl.list_crawling()
+    crawl.excel_style()

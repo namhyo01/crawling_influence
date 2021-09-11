@@ -19,29 +19,37 @@ class Crawling:
     def __init__(self):
         self.influence_list_link = []
 
-    def crawling(self):
+    def __del__(self):
+        self.stop()
+    def stop(self):
+        print('finish')     
+    def crawling(self,main_category='여행',sub_category='여행',start=1,finish=20):
         URL = "https://in.naver.com/intro/influencers"
-        category="라이프"
-
+        print(main_category)
+        print(sub_category)
         driver = webdriver.Chrome(executable_path='chromedriver')
         driver.implicitly_wait(time_to_wait=5)
         driver.get(url=URL)
         category_tag = driver.find_elements_by_class_name('CategoryTabList__item___1-Jlu')
 
-
+        check=False
         # 메인 카테고리 클릭
-        for main_category in category_tag:
-            if(main_category.text=='라이프'):
-                main_category.click()
+        for _main_category in category_tag:
+            if(_main_category.text==main_category):
+                _main_category.click()
+                check=True
+        if not check:
+            return -1
         #서브 카테고리 클릭
         sub_category_tag = driver.find_elements_by_class_name('IntroCategoryGroup__keyword_item___332no')
-        for sub_category in sub_category_tag:
-            print(sub_category.text)
-            if(sub_category.text=='육아'):
-                sub_category.click()
+        
+        for _sub_category in sub_category_tag:
+            if(_sub_category.text==sub_category):
+                _sub_category.click()
+                check=True
+        if(not check):
+            return -2
         # 몇개를 가져올지 계속해서 내려가면서 가져온다.
-        start = 5
-        finish = 50
         scroll = int(finish/20)+1
         time.sleep(3)
         SCROLL_PAUSE_SEC = 1
@@ -73,11 +81,10 @@ class Crawling:
                 continue
             influence = influence.find_element_by_tag_name('a')
             self.influence_list_link.append(influence.get_attribute("href"))
-            print(influence_cnt)
              # 인플루언서 리스트 링크 모음
-        print(len(self.influence_list_link))
+        return 1
 
-    def list_crawling(self):
+    def list_crawling(self,dir_path):
         df = pd.DataFrame(columns=['이름','인스타그램','유튜브','블로그','네이버TV','포스트','스마트스토어'])
         for link in self.influence_list_link:
             #link 하나씩 처리
@@ -117,12 +124,12 @@ class Crawling:
                     df = df.append(data, ignore_index=True)
             except Exception as e:
                 print(e)
-        df.to_excel('influence.xlsx', index=False)
+        df.to_excel(dir_path+'\influence.xlsx', index=False)
     
     #엑셀 열너비 조정
-    def excel_style(self):
+    def excel_style(self,dir_path):
         excel = win32.gencache.EnsureDispatch('Excel.Application')
-        load_wb = excel.Workbooks.Open('D:\외주\influence.xlsx')
+        load_wb = excel.Workbooks.Open(dir_path + '\influence.xlsx')
 
         sheet_list = []
         for sh in load_wb.Sheets:

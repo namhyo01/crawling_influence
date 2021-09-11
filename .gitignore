@@ -1,0 +1,5 @@
+*.xlsx
+*.exe
+/dist/
+/build/
+*.pkg
